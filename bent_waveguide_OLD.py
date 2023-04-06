@@ -4,9 +4,6 @@ import meep as mp
 
 METERS_TO_MICROMETERS = 1E6
 
-wavelength = 1.55E-6 * METERS_TO_MICROMETERS
-pml_thickness = 1E-6 * METERS_TO_MICROMETERS
-
 # Draw the bend
 thickness_cladding = 3E-6 * METERS_TO_MICROMETERS
 thickness_silicon = 0.22E-6 * METERS_TO_MICROMETERS
@@ -119,14 +116,10 @@ cell = mp.Vector3(x_max - x_min, y_max - y_min, z_max - z_min)
 pml_layers = [mp.PML(1.0)]
 resolution = 10
 
-sources = [mp.Source(mp.ContinuousSource(frequency=(1.0 / wavelength)),
-	component=mp.Ez,
-	center=mp.Vector3(0, y_min + pml_thickness))]
-
 sources = [
-    mp.Source(mp.ContinuousSource(wavelength=wavelength, width=20),
+    mp.Source(mp.ContinuousSource(wavelength=2 * (11**0.5), width=20),
         component=mp.Ey,
-        center=mp.Vector3(0, y_min + pml_thickness, thickness_silicon / 2),
+        center=input_waveguide_location_vector,
         size=mp.Vector3(width_ridge, 0, thickness_silicon))]
 
 sim = mp.Simulation(
