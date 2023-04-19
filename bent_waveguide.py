@@ -1,6 +1,7 @@
 # Simulate a bent waveguide
-
+import matplotlib.pyplot as plt
 import meep as mp
+
 
 METERS_TO_MICROMETERS = 1E6
 
@@ -25,18 +26,18 @@ material_vacuum = 1
 extra = 0.5E-6 * METERS_TO_MICROMETERS
 thickness_margin = 500E-9 * METERS_TO_MICROMETERS
 width_margin = 2E-6 * METERS_TO_MICROMETERS
-length_input = 1E-6 * METERS_TO_MICROMETERS
+length_input = 5E-6 * METERS_TO_MICROMETERS
 
-bend_radius = 1E-6 * METERS_TO_MICROMETERS
-bend_outer_radius = bend_radius + width_margin / 2
-bend_inner_radius = bend_radius - width_margin / 2
+bend_radius = 5E-6 * METERS_TO_MICROMETERS
+bend_outer_radius = bend_radius + width_ridge / 2
+bend_inner_radius = bend_radius - width_ridge / 2
 
 x_min = 0 - width_ridge / 2 - width_margin
 x_max = bend_radius + length_input
 z_min = -thickness_margin
 z_max = thickness_silicon + thickness_margin
 y_min = 0
-y_max = bend_radius + width_ridge / 2 + width_margin + length_input / 2
+y_max = bend_radius + width_ridge / 2 + width_margin + length_input
 
 cladding_size_vector = mp.Vector3((x_max + extra) - (x_min - extra),
 	(y_max + extra) - (y_min - extra),
@@ -47,6 +48,7 @@ buried_oxide_size_vector = mp.Vector3((x_max + extra) - (x_min - extra),
 slab_size_vector = mp.Vector3((x_max + extra) - (x_min - extra),
 	(y_max + extra) - (y_min - extra),
 	thickness_slab)
+	
 input_waveguide_size_vector = mp.Vector3(width_ridge,
 	(length_input + width_margin),
 	thickness_silicon)
@@ -63,12 +65,14 @@ buried_oxide_location_vector = mp.Vector3(((x_max + extra) + (x_min - extra)) / 
 slab_location_vector = mp.Vector3(((x_max + extra) + (x_min - extra)) / 2,
 	((y_max + extra) + (y_min - extra)) / 2,
 	thickness_slab / 2)
+	
 input_waveguide_location_vector = mp.Vector3(0,
 	y_min + (length_input - width_margin) / 2,
 	thickness_silicon / 2)
 output_waveguide_location_vector = mp.Vector3(bend_radius + (length_input + width_margin) / 2,
 	length_input + bend_radius,
 	thickness_silicon / 2)
+	
 bend_center = mp.Vector3(bend_radius, length_input, thickness_silicon / 2)
 
 cladding = mp.Block(cladding_size_vector,
@@ -80,6 +84,7 @@ buried_oxide = mp.Block(buried_oxide_size_vector,
 slab = mp.Block(slab_size_vector,
 	center=slab_location_vector,
 	material=mp.Medium(epsilon=material_silicon))
+	
 input_waveguide = mp.Block(input_waveguide_size_vector,
 	center=input_waveguide_location_vector,
 	material=mp.Medium(epsilon=material_silicon))
@@ -95,33 +100,43 @@ bend_inner = mp.Cylinder(material=mp.Medium(epsilon=material_vacuum),
 	radius=bend_inner_radius,
 	height=thickness_silicon)
 bend_rectangle_bottom_left = mp.Block(mp.Vector3(bend_inner_radius, bend_outer_radius, thickness_silicon),
-	center=(bend_center - mp.Vector3(bend_inner_radius / 2, bend_outer_radius - bend_inner_radius / 2)),
+	center=(bend_center - mp.Vector3(bend_inner_radius / 2, bend_outer_radius - bend_inner_radius / 2, 0)),
 	material=mp.Medium(epsilon=material_vacuum))
 bend_rectangle_bottom_right = mp.Block(mp.Vector3(bend_outer_radius, bend_outer_radius, thickness_silicon),
-	center=(bend_center - mp.Vector3(-bend_outer_radius / 2, bend_outer_radius / 2)),
+	center=(bend_center - mp.Vector3(-bend_outer_radius / 2, bend_outer_radius / 2, 0)),
 	material=mp.Medium(epsilon=material_vacuum))
 bend_rectangle_top_right = mp.Block(mp.Vector3(bend_outer_radius, bend_inner_radius, thickness_silicon),
-	center=(bend_center + mp.Vector3(bend_outer_radius - bend_inner_radius / 2, bend_inner_radius / 2)),
+	center=(bend_center + mp.Vector3(bend_outer_radius - bend_inner_radius / 2, bend_inner_radius / 2, 0)),
 	material=mp.Medium(epsilon=material_vacuum))
 
-geometry = [cladding,
-	buried_oxide,
-	slab,
-	input_waveguide,
+#geometry = [cladding,
+#	buried_oxide,
+#	slab,
+#	input_waveguide,
+#	output_waveguide,
+#	bend_outer,
+#	bend_inner,
+#	bend_rectangle_bottom_left,
+#	bend_rectangle_bottom_right,
+#	bend_rectangle_top_right]
+
+geometry = [input_waveguide,
 	output_waveguide,
 	bend_outer,
 	bend_inner,
 	bend_rectangle_bottom_left,
 	bend_rectangle_bottom_right,
-	bend_rectange_top_right]
+	bend_rectangle_top_right]
 
-cell = mp.Vector3(x_max - x_min, y_max - y_min, z_max - z_min)
-pml_layers = [mp.PML(1.0)]
+cell = mp.Vector3(x_max - x_min, y_max - y_min, z_max - z_min + 2 * pml_thickness)
+cell_center = mp.Vector3((x_max + x_min) / 2, (y_max + y_min) / 2, (z_max + z_min) / 2)
+
+pml_layers = [mp.PML(pml_thickness)]
 resolution = 10
 
 sources = [mp.Source(mp.ContinuousSource(frequency=(1.0 / wavelength)),
 	component=mp.Ez,
-	center=mp.Vector3(0, y_min + pml_thickness))]
+	center=mp.Vector3(0, y_min + pml_thickness, thickness_silicon / 2))]
 
 sources = [
     mp.Source(mp.ContinuousSource(wavelength=wavelength, width=20),
@@ -134,7 +149,8 @@ sim = mp.Simulation(
     boundary_layers=pml_layers,
     geometry=geometry,
     sources=sources,
-    resolution=resolution)
+    resolution=resolution,
+    geometry_center=cell_center)
 
 sim.plot3D(save_to_image=True, image_name='sim.png')
 
@@ -143,3 +159,17 @@ sim.plot3D(save_to_image=True, image_name='sim.png')
 #    mp.to_appended("ez", mp.at_every(0.6, mp.output_efield_z)),
 #    until=200,
 #)
+
+sim.run(until=200)
+
+eps_data = sim.get_array(center=cell_center, size=cell, component=mp.Dielectric)
+ez_data = sim.get_array(center=cell_center, size=cell, component=mp.Ez)
+location = ez_data.shape
+location = int(location[2] / 2)
+plt.figure()
+temporary = eps_data[:, :, location]
+plt.imshow(temporary.transpose(), interpolation="spline36", cmap="binary")
+temporary = ez_data[:, :, location]
+plt.imshow(temporary.transpose(), interpolation="spline36", cmap="RdBu", alpha=0.9)
+plt.axis("off")
+plt.show()
