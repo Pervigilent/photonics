@@ -1,0 +1,43 @@
+\documentclass{book}
+\usepackage[usenames,dvipsnames]{color}
+
+\begin{document}
+
+	\title{Semiconductor Photonics}
+	\author{Stewart Nash}
+	
+	\maketitle
+	
+	\chapter{Introduction}
+	
+		{\color{Red} This document is titled Semiconductor Photonics. The intent is to focus primarily on gallium nitride photonics, but attempt to treat various other semiconductors to whatever extent is feasible. If the document becomes predominantly about gallium nitride, with only marginal treatment of other semiconductors, it will be prudent and encumbent to change the title to Gallium Nitride Photonics.}
+		
+		The angular frequency $\omega$ of a monochromatic wave of light is related to the frequency $f=\nu$ by $\omega=2\pi f$. The wavenumber $k$ is then given by
+		\begin{equation}
+			k=\omega\sqrt{\varepsilon\mu_0}=\beta-j\frac{1}{2}\alpha=k_0\sqrt{1+\chi}
+		\end{equation}
+		where $\alpha$ is the absorption coefficient (attenuation coefficient) and $\beta$ is the propagation constant.
+		
+		The propagation constant is a measure of the rate of phase change with distance in the direction of propagation. It can be used to formulate an effective refractive index
+		\begin{equation}
+			n=\beta/k_0
+		\end{equation}
+
+	\chapter{Waveguide}
+	
+			Two popular substrates for growing GaN are sapphire and silicon. A GaN waveguide requires a cladding layer. Usually, GaN is either deposited directly on sapphire or a cladding layer of AlGaN is deposite between the GaN and sapphire.
+			
+			The first-order Sellmeir dispersion formula for $\mathrm{Al_xGa_{1-x}N}$ is given by
+			\begin{equation}
+				n(\lambda)=\sqrt{1+\frac{(B_0+B_1x+B_2x^2)\lambda^2}{\lambda^2-(C_0+C_1x)^2}}
+			\end{equation}
+
+	\chapter{Coupler}
+		
+		The coupling coefficient $C$ is given by
+		\begin{equation}
+			C=\frac{1}{2}(\beta_1-\beta_2)
+		\end{equation}
+		where $\beta_1$ is the propagation constant of the symmetric mode and $\beta_2$ is the propagation constant of the antisymmetric mode.
+
+\end{document}
